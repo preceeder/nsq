@@ -23,7 +23,7 @@ $(BLDDIR)/to_nsq:      $(wildcard apps/to_nsq/*.go               internal/*/*.go
 
 $(BLDDIR)/%:
 	@mkdir -p $(dir $@)
-	go build ${BLDFLAGS} -o $@ ./apps/$*
+	CGO_ENABLED=0 GOOS=linux GOARCH=amd64 go build ${BLDFLAGS} -o $@ ./apps/$*
 
 $(APPS): %: $(BLDDIR)/%
 

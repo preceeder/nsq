@@ -2,10 +2,10 @@
 dist/
 .cover/
 profile/
-
+.idea/*
 # nsqd data from testing
 *.dat
-
+contrib/*
 # nsqadmin
 node_modules
 
