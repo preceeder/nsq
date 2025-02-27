@@ -5,6 +5,11 @@ import (
 	"bytes"
 	"encoding/json"
 	"fmt"
+	"github.com/julienschmidt/httprouter"
+	"github.com/nsqio/nsq/internal/http_api"
+	"github.com/nsqio/nsq/internal/lg"
+	"github.com/nsqio/nsq/internal/protocol"
+	"github.com/nsqio/nsq/internal/version"
 	"io"
 	"net"
 	"net/http"
@@ -17,12 +22,6 @@ import (
 	"strconv"
 	"strings"
 	"time"
-
-	"github.com/julienschmidt/httprouter"
-	"github.com/nsqio/nsq/internal/http_api"
-	"github.com/nsqio/nsq/internal/lg"
-	"github.com/nsqio/nsq/internal/protocol"
-	"github.com/nsqio/nsq/internal/version"
 )
 
 var boolParams = map[string]bool{
@@ -247,7 +246,7 @@ func (s *httpServer) doPUB(w http.ResponseWriter, req *http.Request, ps httprout
 	}
 
 	msg := NewMessage(topic.GenerateID(), body)
-	msg.deferred = deferred
+	msg.AbsTs = time.Now().Add(deferred).UnixNano()
 	err = topic.PutMessage(msg)
 	if err != nil {
 		return nil, http_api.Err{503, "EXITING"}

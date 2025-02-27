@@ -310,6 +310,18 @@ func (p *protocolV2) messagePump(client *clientV2, startedChan chan bool) {
 				p.nsqd.logf(LOG_ERROR, "failed to decode message - %s", err)
 				continue
 			}
+
+			var deferred time.Duration
+			nowInNano := time.Now().UnixNano()
+			if nowInNano-msg.AbsTs < 0 {
+				deferred = time.Duration(msg.AbsTs - nowInNano)
+			}
+
+			if deferred != 0 {
+				subChannel.PutMessageDeferred(msg, deferred)
+				continue
+			}
+
 			msg.Attempts++
 
 			subChannel.StartInFlightTimeout(msg, client.ID, msgTimeout)
@@ -918,7 +930,9 @@ func (p *protocolV2) DPUB(client *clientV2, params [][]byte) ([]byte, error) {
 
 	topic := p.nsqd.GetTopic(topicName)
 	msg := NewMessage(topic.GenerateID(), messageBody)
-	msg.deferred = delayDuration
+	//msg.deferred = delayDuration
+	msg.AbsTs = time.Now().Add(delayDuration).UnixNano()
+
 	err = topic.PutMessage(msg)
 	if err != nil {
 		return nil, protocol.NewFatalClientErr(err, "E_DPUB_FAILED", "DPUB failed "+err.Error())

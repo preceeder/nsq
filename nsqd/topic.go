@@ -69,7 +69,7 @@ func NewTopic(topicName string, nsqd *NSQD, deleteCallback func(*Topic)) *Topic 
 			nsqd.getOpts().DataPath,
 			nsqd.getOpts().MaxBytesPerFile,
 			int32(minValidMsgLength),
-			int32(nsqd.getOpts().MaxMsgSize)+minValidMsgLength,
+			int32(nsqd.getOpts().MaxMsgSize)+maxValidMsgLength,
 			nsqd.getOpts().SyncEvery,
 			nsqd.getOpts().SyncTimeout,
 			dqLogf,
@@ -315,6 +315,12 @@ func (t *Topic) messagePump() {
 			goto exit
 		}
 
+		var deferred time.Duration
+		nowInNano := time.Now().UnixNano()
+		if nowInNano-msg.AbsTs < 0 {
+			deferred = time.Duration(msg.AbsTs - nowInNano)
+		}
+
 		for i, channel := range chans {
 			chanMsg := msg
 			// copy the message because each channel
@@ -324,10 +330,9 @@ func (t *Topic) messagePump() {
 			if i > 0 {
 				chanMsg = NewMessage(msg.ID, msg.Body)
 				chanMsg.Timestamp = msg.Timestamp
-				chanMsg.deferred = msg.deferred
 			}
-			if chanMsg.deferred != 0 {
-				channel.PutMessageDeferred(chanMsg, chanMsg.deferred)
+			if deferred != 0 {
+				channel.PutMessageDeferred(chanMsg, deferred)
 				continue
 			}
 			err := channel.PutMessage(chanMsg)

@@ -1,4 +1,4 @@
-module github.com/preceeder/nsq
+module github.com/nsqio/nsq
 
 go 1.17
 
@@ -14,11 +14,14 @@ require (
 	github.com/mreiferson/go-options v1.0.0
 	github.com/nsqio/go-diskqueue v1.1.0
 	github.com/nsqio/go-nsq v1.1.0
+	github.com/vmihailenco/msgpack v4.0.4+incompatible
 )
 
 require (
-	github.com/davecgh/go-spew v1.1.1 // indirect
+	github.com/golang/protobuf v1.5.2 // indirect
 	golang.org/x/sys v0.10.0 // indirect
+	google.golang.org/appengine v1.6.8 // indirect
+	google.golang.org/protobuf v1.26.0 // indirect
 )
 
 replace github.com/judwhite/go-svc => github.com/mreiferson/go-svc v1.2.2-0.20210815184239-7a96e00010f6
